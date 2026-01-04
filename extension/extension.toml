@@ -18,5 +18,5 @@ icon = "icon.svg"
 
 # macOS ARM64 (Apple Silicon)
 [agent_servers.ook.targets.darwin-aarch64]
-archive = "file:///Users/mrw/Workspace/ook/extension/ook-darwin-aarch64.tar.gz"
-cmd = "ook"
+archive = "https://github.com/mrw-droid/ook-zed-extension
+cmd = "./ook"
