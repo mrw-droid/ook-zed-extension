@@ -1,0 +1,23 @@
+[package]
+name = "ook"
+version = "0.1.0"
+edition = "2021"
+description = "Zed agent extension that proxies ACP to a remote Ook Bridge"
+license = "MIT"
+
+[[bin]]
+name = "ook"
+path = "src/main.rs"
+
+[dependencies]
+tokio = { version = "1", features = ["full"] }
+tokio-tungstenite = { version = "0.24", features = ["native-tls"] }
+futures-util = "0.3"
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter", "json"] }
+hostname = "0.4"
+
+[profile.release]
+lto = true
+strip = true
+opt-level = "z"

@@ -1,0 +1,22 @@
+id = "ook"
+name = "Ook"
+version = "0.1.0"
+schema_version = 1
+authors = ["Matt Williams <mrw@flatline.ai>"]
+description = "Remote Claude Code agent via Ook Bridge"
+repository = "https://github.com/mrw-droid/ook"
+
+[agent_servers.ook]
+name = "Ook (Remote Claude)"
+icon = "icon.svg"
+
+# Environment variables for configuration
+[agent_servers.ook.env]
+# Users can override these in their Zed settings
+# OOK_REMOTE_HOST = "lima-hostname-sandbox"
+# OOK_REMOTE_PORT = "8647"
+
+# macOS ARM64 (Apple Silicon)
+[agent_servers.ook.targets.darwin-aarch64]
+archive = "file:///Users/mrw/Workspace/ook/extension/ook-darwin-aarch64.tar.gz"
+cmd = "ook"
