@@ -24,6 +24,12 @@ FROM node:20-slim
 
 WORKDIR /app
 
+# Debug tools (remove for production)
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    procps \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
 # Install claude-code-acp globally
 RUN npm install -g @zed-industries/claude-code-acp
 
