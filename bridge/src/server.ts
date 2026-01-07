@@ -25,6 +25,7 @@ export class BridgeServer {
   private processManager: ProcessManager | null = null;
   private config: ServerConfig;
   private pendingRequests: Map<string | number, PendingRequest> = new Map();
+  private sessionAuthenticated = false;
 
   constructor(config: ServerConfig) {
     this.config = config;
@@ -62,7 +63,21 @@ export class BridgeServer {
         log.info({ code, reason: reason.toString() }, "Client disconnected");
         metrics.activeConnections.add(-1);
         this.activeConnection = null;
-        // Don't kill process - allow reconnect and resume
+
+        // Kill process if session wasn't authenticated
+        if (!this.sessionAuthenticated && this.processManager) {
+          log.info("Session not authenticated, killing process");
+          this.processManager.kill();
+          this.processManager = null;
+        }
+        // TODO: Re-enable session resume for authenticated sessions
+        // For now, always kill on disconnect
+        if (this.processManager) {
+          log.info("Killing process on disconnect (session resume disabled)");
+          this.processManager.kill();
+          this.processManager = null;
+        }
+        this.sessionAuthenticated = false;
       });
 
       ws.on("error", (err) => {
@@ -77,10 +92,16 @@ export class BridgeServer {
   }
 
   private ensureProcess(): void {
-    // If process is still running, reuse it (session resume)
+    // TODO: Re-enable session resume once authentication is implemented
+    // if (this.sessionAuthenticated && this.processManager?.isRunning) {
+    //   log.info({ pid: this.processManager.pid }, "Reattaching to existing process");
+    //   return;
+    // }
+
+    // Always spawn fresh process (session resume disabled)
     if (this.processManager?.isRunning) {
-      log.info({ pid: this.processManager.pid }, "Reattaching to existing process");
-      return;
+      log.info({ pid: this.processManager.pid }, "Killing existing process (session resume disabled)");
+      this.processManager.kill();
     }
 
     // Spawn new process
@@ -174,6 +195,12 @@ export class BridgeServer {
             metrics.errorCount.add(1, { type: "rpc_error", method: pending.method });
           } else {
             pending.span.setStatus({ code: SpanStatusCode.OK });
+
+            // Mark session authenticated after successful initialize
+            if (pending.method === "initialize" && !this.sessionAuthenticated) {
+              log.info("Session authenticated (initialize succeeded)");
+              this.sessionAuthenticated = true;
+            }
           }
 
           pending.span.end();
